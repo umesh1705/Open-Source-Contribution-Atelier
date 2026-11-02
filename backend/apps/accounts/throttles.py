@@ -126,6 +126,14 @@ class BaseDistributedThrottle(SimpleRateThrottle):
     Falls back to local cache implementation if "local" or when Redis is down.
     """
 
+    def get_rate(self):
+        rates = getattr(django_settings, "REST_FRAMEWORK", {}).get(
+            "DEFAULT_THROTTLE_RATES", {}
+        )
+        if hasattr(self, "scope") and self.scope in rates:
+            return rates[self.scope]
+        return super().get_rate()
+
 
 class _ProxyAwareThrottle(SlidingWindowAnonThrottle):  # type: ignore
     """Base class that uses the proxy-aware IP resolver for cache keys."""
